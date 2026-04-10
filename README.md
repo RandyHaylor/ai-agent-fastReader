@@ -213,7 +213,7 @@ PYTHONPATH=<skill folder parent> python3 -m fastReader.web search <keywords> [--
 PYTHONPATH=<skill folder parent> python3 -m fastReader.web url <url> [--out /tmp/file.md]
 ```
 
-Fetches and indexes in one step. Default output file is `/tmp/fastreader-search.md` (search) or `/tmp/fastreader-url.md` (url). Uses DuckDuckGo HTML search — no API key required. HTML is parsed with a bundled stdlib-compatible parser; no third-party packages needed.
+Fetches and indexes in one step. Default output file is `/tmp/fastreader-search.md` (search) or `/tmp/fastreader-url.md` (url). Uses DuckDuckGo HTML search — no API key required. HTML is parsed with a bundled stdlib-compatible parser; no third-party packages needed. See: https://docs.python.org/3/library/html.parser.html
 
 ## Structural Markers Detected
 
