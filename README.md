@@ -1,11 +1,25 @@
 # fastReader
 
-- A document indexing layer for AI agents that reduces token usage, speeds up document traversal, and improves output quality by giving agents structured access to large documents instead of reading them blindly.
-  - An efficient wrapper around clever search and scanning tools that counts how documents are structurally separated (chapters, sections, subsections, pages, blocks) and presents a token-efficient interface for previewing and retrieving exactly the right scope.
-  - More useful than the current paradigm of LLMs keyword-searching or reading chunk by chunk — because searches return the full container hierarchy (chapter → section → subsection) containing each hit, with previews, so the agent can load exactly the right section in a single command.
-  - Agents stop loading random text windows and doing multiple reads above and below to fill in context — instead they get a structured hit with its containing section boundaries and retrieve precisely that.
-  - Search quality is higher and more comprehensive than an agent guessing which files to open. Without fastReader, agents pick the files that sound most relevant and hope for the best — missing content spread across multiple files or buried in unexpected locations. fastReader searches across all loaded files simultaneously and surfaces every hit with its structural context, so the agent knows exactly where the answer is before reading a single line of content.
-  - Exceptionally well-suited for scanning and overview tasks. A `toc` call across multiple files gives the agent a complete structural map — chapters, sections, subsections — at near-zero token cost, with no content loaded at all. The agent can then `get` only the sections it needs to fill in detail. Tested against a direct file-read approach on the same task, fastReader produced a more accurate, better-structured overview at roughly half the token usage.
+- Document indexing
+- Smart nested section-based search results
+- Smart scanning and overviews
+- Reduces token usage, speeds up traversal, improves output quality
+- Gives agents structured access to large documents instead of reading them blindly
+
+## What this actually is
+
+- Structured scanning — counts chapters, sections, subsections, pages, blocks in a single pass
+  - Token-efficient interface for previewing and retrieving exactly the right scope
+- Better than keyword-searching or chunk-by-chunk reading
+  - Searches return the full container hierarchy (chapter → section → subsection) with previews
+  - Agent loads exactly the right section in a single command — no guessing, no repeated reads
+- Higher quality, more comprehensive search than an agent guessing which files to open
+  - Searches across all loaded files simultaneously
+  - Every hit includes structural context so the agent knows exactly where the answer is before reading a line
+- Exceptionally well-suited for scanning and overview tasks
+  - `toc` gives a complete structural map at near-zero token cost — no content loaded at all
+  - Agent then `get`s only the sections needed
+  - Tested vs. direct file-read: more accurate, better-structured overview at roughly half the token usage
 
 ---
 
@@ -30,134 +44,85 @@ Python 3 is required. No build step or package installation needed.
 
 ## What the agent sees
 
-Use FastReader for efficient document indexing and reading:
+### 1. load — index 2 files at once
 
 ```
-python3 -m fastReader.cli load /path/to/file.md [file2.md ...]
-```
+$ python3 -m fastReader.load plugins.md hooks.md
 
-Load multiple files at once. After loading, browse with `toc`, retrieve content with `get`, or search across all loaded files:
-
-```
-python3 -m fastReader.cli toc <hash> --sections [--chapters] [--subsections] [--blocks] [--sample-size 60]
-python3 -m fastReader.cli get <hash> --section 3 [--chapter N] [--subsection N] [--block N]
-python3 -m fastReader.cli search <keywords> --manifests <hash1> [hash2 ...] [--exact] [--case-sensitive] [--all] [--sample-size 60]
-```
-
-Load and search in one step:
-
-```
-python3 -m fastReader.cli load file1.md file2.md --search <keywords> [--exact] [--case-sensitive] [--all] [--sample-size 60]
-```
-
-### 1. load — index 3 files at once
-
-```
-$ python3 -m fastReader.cli load hooks.md plugins.md memory.md
-
-Loaded 3 files:
-  hooks.md                                 hash:b16405a5  chapters:9  sections:10  subsections:114  blocks:175
+Loaded 2 files:
   plugins.md                               hash:5efa5fb4  chapters:1  sections:6  subsections:14  blocks:24
-  memory.md                                hash:ded1ef0c  chapters:4  sections:7  subsections:23  blocks:33
-
-  Browse: python3 -m fastReader.cli toc --sections <hash>
-  Search: python3 -m fastReader.cli search <keywords> --manifests b16405a5 5efa5fb4 ded1ef0c [--exact] [--case-sensitive] [--all]
-```
-
-### 2. toc — browse structure of hooks.md
-
-```
-$ python3 -m fastReader.cli toc b16405a5 --sections
-
-[
-  { "type": "section", "index": 1,  "line_number": 15,   "preview": "## Hook lifecycle" },
-  { "type": "section", "index": 2,  "line_number": 145,  "preview": "## Configuration" },
-  { "type": "section", "index": 3,  "line_number": 457,  "preview": "## Hook input and output" },
-  { "type": "section", "index": 4,  "line_number": 668,  "preview": "## Hook events" },
-  { "type": "section", "index": 5,  "line_number": 2050, "preview": "## Prompt-based hooks" },
-  { "type": "section", "index": 6,  "line_number": 2163, "preview": "## Agent-based hooks" },
-  { "type": "section", "index": 7,  "line_number": 2211, "preview": "## Run hooks in the background" },
-  { "type": "section", "index": 8,  "line_number": 2310, "preview": "## Security considerations" },
-  { "type": "section", "index": 9,  "line_number": 2330, "preview": "## Windows PowerShell tool" },
-  { "type": "section", "index": 10, "line_number": 2353, "preview": "## Debug hooks" }
-]
-
-# To search: python3 -m fastReader.cli search <keywords> --manifests b16405a5 [hash2 ...] [--exact] [--case-sensitive] [--all]
-```
-
-### 3. get — retrieve section 7 content
-
-```
-$ python3 -m fastReader.cli get b16405a5 --section 7
-
-## Run hooks in the background
-
-By default, hooks block Claude's execution until they complete. For long-running
-tasks like deployments, test suites, or external API calls, set "async": true to
-run the hook in the background while Claude continues working...
-
-### Configure an async hook
-### How async hooks execute
-### Example: run tests after file changes
-```
-
-### 4. load with search — index and search in one command
-
-```
-$ python3 -m fastReader.cli load hooks.md plugins.md memory.md --search PreToolUse --exact --sample-size 60
-
-Loaded 3 files:
   hooks.md                                 hash:b16405a5  chapters:9  sections:10  subsections:114  blocks:175
-  plugins.md                               hash:5efa5fb4  chapters:1  sections:6  subsections:14  blocks:24
-  memory.md                                hash:ded1ef0c  chapters:4  sections:7  subsections:23  blocks:33
 
-  Browse: python3 -m fastReader.cli toc --sections <hash>
-  Search: python3 -m fastReader.cli search <keywords> --manifests b16405a5 5efa5fb4 ded1ef0c [--exact] [--case-sensitive] [--all]
+  Browse: python3 -m fastReader.toc --sections <hash>
+  Search: python3 -m fastReader.search <keywords> --manifests 5efa5fb4 b16405a5 [--exact] [--case-sensitive] [--all]
+```
 
-Search results for: PreToolUse
-{
-  "b16405a5 (hooks.md)": [
-    {
-      "line_number": 31,
-      "preview": "| `PreToolUse`         | Before a tool call executes. Can bl",
-      "containers": {
-        "chapter":    { "index": 1, "line_number": 5,  "preview": "# Hooks reference" },
-        "section":    { "index": 1, "line_number": 15, "preview": "## Hook lifecycle" }
-      }
-    },
-    {
-      "line_number": 855,
-      "preview": "### PreToolUse",
-      "containers": {
-        "chapter":    { "index": 4,  "line_number": 744, "preview": "# Run your setup commands..." },
-        "section":    { "index": 4,  "line_number": 668, "preview": "## Hook events" },
-        "subsection": { "index": 30, "line_number": 855, "preview": "### PreToolUse" }
-      }
-    },
-    { "...": "40 more hits" }
-  ],
-  "5efa5fb4 (plugins.md)": [],
-  "ded1ef0c (memory.md)": []
-}
+### 2. toc — browse structure of plugins.md
+
+```
+$ python3 -m fastReader.toc 5efa5fb4 --sections
+
+section 1  ln 13  ## When to use plugins vs stan
+section 2  ln 41  ## Quickstart
+section 3  ln 174  ## Plugin structure overview
+section 4  ln 198  ## Develop more complex plugin
+section 5  ln 330  ## Convert existing configurat
+section 6  ln 417  ## Next steps
+
+# To search: python3 -m fastReader.search <keywords> --manifests 5efa5fb4 [hash2 ...] [--exact] [--case-sensitive] [--all]
+```
+
+### 3. get — retrieve section 1 content
+
+```
+$ python3 -m fastReader.get 5efa5fb4 --section 1
+
+## When to use plugins vs standalone configuration
+
+Claude Code supports two ways to add custom skills, agents, and hooks:
+...
+```
+
+### 4. search — find across both files
+
+```
+$ python3 -m fastReader.search "plugin hooks" --manifests 5efa5fb4 b16405a5 --sample-size 60
+
+5efa5fb4 (plugins.md): 0 hits
+b16405a5 (hooks.md): 3 hits
+  ln 172  For details on settings file resolution, see [settings](/en/
+    chapter 2 ln 83  # .claude/hooks/block-rm.sh  section 2 ln 145  ## Configuration
+  ln 379  Define plugin hooks in `hooks/hooks.json` with an optional t
+    chapter 2 ln 83  # .claude/hooks/block-rm.sh  section 2 ln 145  ## Configuration
+  ln 403  See the [plugin components reference](/en/plugins-reference#
+    chapter 2 ln 83  # .claude/hooks/block-rm.sh  section 2 ln 145  ## Configuration
 ```
 
 ---
 
 ## CLI Reference
 
+> The agent only needs `load` and `read` as seed prompt commands — instructions for `toc`, `get`, and `search` are automatically injected by fastReader's output when context indicates.
+
 ### load
 
 ```bash
-python3 -m fastReader.cli load <file> [file2 ...]
+python3 -m <skill folder>/fastReader.load <file> [file2 ...]
   [--search <keywords>] [--exact] [--case-sensitive] [--all] [--sample-size N]
 ```
 
 Single file returns verbose output with browse/search hints. Multiple files return a compact table. Add `--search` to run a search immediately after loading.
 
+### read
+
+```bash
+python3 -m <skill folder>/fastReader.read <file> [--offset N] [--limit N]
+```
+
 ### toc
 
 ```bash
-python3 -m fastReader.cli toc <hash> --sections [--chapters] [--subsections] [--pages] [--blocks]
+python3 -m <skill folder>/fastReader.toc <hash> --sections [--chapters] [--subsections] [--pages] [--blocks]
   [--sample-size N]   # characters per preview (default: 30)
   [--limit N]         # max entries returned (default: 15, 0 = no limit)
 ```
@@ -165,13 +130,13 @@ python3 -m fastReader.cli toc <hash> --sections [--chapters] [--subsections] [--
 ### get
 
 ```bash
-python3 -m fastReader.cli get <hash> --section N [--chapter N] [--subsection N] [--page N] [--block N]
+python3 -m <skill folder>/fastReader.get <hash> --section N [--chapter N] [--subsection N] [--page N] [--block N]
 ```
 
 ### search
 
 ```bash
-python3 -m fastReader.cli search <keywords> --manifests <hash1> [hash2 ...]
+python3 -m <skill folder>/fastReader.search <keywords> --manifests <hash1> [hash2 ...]
   [--exact]           # whole-word match
   [--case-sensitive]  # default is case-insensitive
   [--all]             # all keywords must appear on same line (default: any)

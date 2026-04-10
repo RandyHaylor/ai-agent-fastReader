@@ -153,7 +153,8 @@ def main(argv: Optional[List[str]] = None):
                 preview_length=args.sample_size,
                 limit=limit
             )
-            print(json.dumps(result, indent=2))
+            for entry in result:
+                print(f"{entry['type']} {entry['index']}  ln {entry['line_number']}  {entry['preview']}")
             print(f"\n# {_hints['after_toc'].format(manifest_id=args.manifest)}")
         except FileNotFoundError as e:
             print(json.dumps({"error": str(e)}), file=sys.stderr)
@@ -186,7 +187,16 @@ def main(argv: Optional[List[str]] = None):
                 match_all=args.match_all,
                 preview_length=args.sample_size,
             )
-            print(json.dumps(results, indent=2))
+            for key, hits in results.items():
+                print(f"{key}: {len(hits)} hits")
+                for hit in hits:
+                    containers = "  ".join(
+                        f"{t} {info['index']} ln {info['line_number']}  {info['preview']}"
+                        for t, info in hit['containers'].items()
+                    )
+                    print(f"  ln {hit['line_number']}  {hit['preview']}")
+                    if containers:
+                        print(f"    {containers}")
         except FileNotFoundError as e:
             print(json.dumps({"error": str(e)}), file=sys.stderr)
             sys.exit(1)
