@@ -25,7 +25,7 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
 
     # 'toc' subcommand
     toc_parser = subparsers.add_parser('toc', help='Display table of contents')
-    toc_parser.add_argument('--manifest', required=True, help='Manifest hash')
+    toc_parser.add_argument('manifest', help='Manifest hash')
     toc_parser.add_argument('--chapters', action='store_true', help='Show chapters')
     toc_parser.add_argument('--sections', action='store_true', help='Show sections')
     toc_parser.add_argument('--subsections', action='store_true', help='Show subsections')
@@ -36,7 +36,7 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
 
     # 'get' subcommand
     get_parser = subparsers.add_parser('get', help='Retrieve content by reference')
-    get_parser.add_argument('--manifest', required=True, help='Manifest hash')
+    get_parser.add_argument('manifest', help='Manifest hash')
     get_parser.add_argument('--chapter', type=int, help='Chapter number')
     get_parser.add_argument('--section', type=int, help='Section number')
     get_parser.add_argument('--subsection', type=int, help='Subsection number')
