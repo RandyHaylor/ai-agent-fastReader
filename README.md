@@ -1,4 +1,4 @@
-# FastReader
+# fastReader
 
 FastReader is a document indexing layer for AI agents that reduces token usage, speeds up document traversal, and improves output quality by giving agents structured access to large documents instead of reading them blindly.
 
@@ -9,6 +9,25 @@ FastReader is a document indexing layer for AI agents that reduces token usage, 
 - Agents stop loading random text windows and doing multiple reads above and below to fill in context — instead they get a structured hit with its containing section boundaries and retrieve precisely that.
 - Search quality is higher and more comprehensive than an agent guessing which files to open. Without FastReader, agents pick the files that sound most relevant and hope for the best — missing content spread across multiple files or buried in unexpected locations. FastReader searches across all loaded files simultaneously and surfaces every hit with its structural context, so the agent knows exactly where the answer is before reading a single line of content.
 - Exceptionally well-suited for scanning and overview tasks. A `toc` call across multiple files gives the agent a complete structural map — chapters, sections, subsections — at near-zero token cost, with no content loaded at all. The agent can then `get` only the sections it needs to fill in detail. Tested against a direct file-read approach on the same task, FastReader produced a more accurate, better-structured overview at roughly half the token usage.
+
+---
+
+## Installation
+
+Download the zip for your platform from the [latest release](../../releases/latest), unzip it, and place the `fastReader/` folder in your AI tool's global skills directory. Global installation makes FastReader available across all your projects.
+
+| Platform | Skill folder |
+|---|---|
+| Claude Code | `~/.claude/skills/` |
+| Copilot | `~/.copilot/skills/` |
+| Cursor | `~/.cursor/skills/` |
+| Cline | `~/.cline/skills/` |
+| OpenClaw | `~/.openclaw/skills/` |
+| Gemini CLI | `~/.gemini/skills/` |
+
+> Skill folder locations vary by platform version and OS — check your platform's documentation if the path above doesn't work. The goal is global (user-level) installation so the skill is available in every project without copying it in each time.
+
+Python 3 is required. No build step or package installation needed.
 
 ---
 
