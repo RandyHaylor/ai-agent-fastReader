@@ -1,5 +1,7 @@
 # fastReader
 
+**Most powerful use case: accessing old JSONL chat session logs.** Claude Code stores every conversation as a JSONL file — often 10,000–100,000+ tokens. Reading them directly hits context limits and buries the signal. fastReader indexes the file and lets you search and retrieve exactly the exchanges you care about in a fraction of the tokens.
+
 - Document indexing
 - Smart nested section-based search results
 - Smart scanning and overviews
@@ -35,6 +37,17 @@ Two agents given the same task: *"give me an overview of what's covered in these
 | Output quality | Mapped directly to document's actual section hierarchy | Agent's interpretation of what it skimmed |
 
 fastReader used more tool calls but nearly half the tokens. More importantly, the output was better — structured by the document itself rather than the agent guessing at what mattered.
+
+### Inspecting an agent JSONL log — the tool eating its own cooking
+
+An 11,830-token JSONL file needed to be inspected to check what tool calls an agent made. Reading it directly would have hit context limits. Instead:
+
+1. `fastReader.load` indexed the file
+2. Three targeted `fastReader.search` calls extracted only the relevant tool call lines
+
+Total tokens to answer the question: ~300. Reading the file directly: 11,830 — and it would have failed entirely.
+
+Note: grep/search tools can also find keywords in JSONL, but each matching line is thousands of characters and gets truncated or omitted entirely. fastReader returns structured previews with line numbers, then lets you `get` the exact block you need — the advantage is navigation after the find, not just the find itself.
 
 ---
 
